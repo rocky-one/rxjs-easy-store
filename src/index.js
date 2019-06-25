@@ -1,36 +1,4 @@
-import { BehaviorSubject, queueScheduler, Observable, concat, isObservable, of } from 'rxjs'
-import { ajax } from 'rxjs/ajax';
-import { map, mergeMap, concatMap, delay } from 'rxjs/operators';
-
-
-// source
-//   .pipe(
-//     // 只是为了确保 meregeMap 的日志晚于 concatMap 示例
-//     delay(5000),
-//     mergeMap(val => of(`Delayed by: ${val}ms`).pipe(delay(val)))
-//   )
-//   .subscribe(val => console.log(`With mergeMap: ${val}`));
-// const log = console.log;
-// queueScheduler.schedule(() => {
-//     setTimeout(() => {
-//         log(1)
-//     },12)
-// });
-// log(2);
-// queueScheduler.schedule(() => log(3));
-
-const getUsers = ajax({
-    url: 'https://httpbin.org/delay/2',
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'rxjs-custom-header': 'Rxjs'
-    },
-    body: [{ name: '哈哈', id: 1 }, { name: '哈哈2', id: 2 }]
-})
-
-
-
+import { BehaviorSubject } from 'rxjs'
 
 class StoreFactory {
     constructor(state$, option) {
@@ -47,7 +15,6 @@ class StoreFactory {
     runEffect = (action) => {
         this.effect[action.type](action.payload.params)
     }
-
 }
 
 class modelMap {
@@ -60,6 +27,10 @@ class modelMap {
         }
         this.modelMap[modelName] = store
     }
+    remove = (modelName) => {
+        this.modelMap[modelName] = null
+        delete this.modelMap[modelName]
+    }
     getModelMap = () => {
         return this.modelMap
     }
@@ -70,18 +41,21 @@ class modelMap {
         return null
     }
 }
+
 const mIns = new modelMap()
 
-export const creatStore = (model) => {
+export const createStore = (model) => {
     const state$ = new BehaviorSubject(model.state)
     const store = new StoreFactory(state$, model)
     mIns.add(model.name, store)
     return {
         state$,
-        model: {
-            effect: store.effect
-        }
+        effect: store.effect
     }
+}
+
+export const removeStore = (modelName) => {
+    mIns.remove(modelName)
 }
 
 export function dispatch(action) {
@@ -92,49 +66,7 @@ export function dispatch(action) {
     }
 }
 
-export function getState(storeName) {
+export function getStore(storeName) {
     return mIns.getModelState(storeName)
 }
 
-export const storeA = creatStore({
-    // store 名称 需唯一
-    name: 'workbook',
-    // 组件 state 
-    state: {
-        list: [{ name: '咕噜', id: 3 }]
-    },
-    // 处理state 生成新的state
-    reducers: {
-        getList: (action, state) => {
-            state.list = action.payload.data
-            return state
-        },
-        addList: (action, state) => {
-            state.list.push(action.payload.data)
-            return state
-        }
-    },
-    // 副作用处理
-    effect: {
-        getList: (params) => {
-            getUsers.subscribe(res => {
-                dispatch({
-                    name: 'workbook',
-                    type: 'getList',
-                    payload: {
-                        data: JSON.parse(res.response.data)
-                    }
-                })
-            })
-        },
-        addList: (params) => {
-            dispatch({
-                name: 'workbook',
-                type: 'addList',
-                payload: {
-                    data: params
-                }
-            })
-        }
-    }
-})

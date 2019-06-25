@@ -1,136 +1,64 @@
 const webpack = require('webpack');
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const HappyPack = require('happypack');
+const os = require('os');
 
 const config = {
     entry: {
-        app: path.join(__dirname, '../src/App.jsx')
+        index: path.join(__dirname, '../src/index.js'),
     },
     output: {
-        filename: '[name].[hash:8].js',
+        filename: '[name].js',
         path: path.join(__dirname, '../dist'),
-        chunkFilename: '[name].[hash:8].js',
-        publicPath: '/dist/',
+        // publicPath: '',
+        library: 'rx-store',
+        libraryTarget: 'umd'
     },
-    mode: 'development',
     resolve: {
-        extensions: ['.js', '.jsx', '.less'],
-        alias: {
-            jquery: path.resolve(__dirname,'../src/lib/jquery-2.1.1.min.js')
-        }
+        extensions: ['.js'],
     },
+    // optimization: {
+    //     splitChunks: {
+    //         cacheGroups: {
+    //             common: {
+    //                 chunks: 'initial',
+    //                 minChunks: 2,
+    //                 minSize: 0,
+    //             }
+    //         }
+    //     }
+    // },
+    mode: 'production',
     module: {
         rules: [
             {
-                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: 'images/[name].[hash:7].[ext]'
-                        }
-                    }
-                ]
-            },
-            // {
-            //     test: /\.(html)$/,
-            //     use: {
-            //         loader: 'html-loader',
-            //         options: {
-            //             attrs: ['img:src','img:data-src']
-            //           }
-            //     }
-            // },
-            {
-                test: /\.css$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: "style-loader",
-                    },
-                    {
-                        loader: "css-loader",
-                        // options: {
-                        //     modules:true,
-                        //     localIdentName:'[local]-[hash:base64:6]'
-                        // }
-                    },
-                    
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            plugins: [
-                                require("autoprefixer")
-                            ]
-                        }
-                    }
-                ]
-            },
-            {
-                test: /\.css$/,
-                use: [
-                    { loader: 'style-loader' },
-                    { loader: 'css-loader' }
-                ],
-                include: /node_modules/
-            },
-            {
-                test: /\.less$/,
-                use: [
-                    {
-                        loader: "style-loader",
-                    },
-                    {
-                        loader: "css-loader",
-                        options: {
-                            modules:true,
-                            localIdentName:'[local]-[hash:base64:6]'
-                        }
-                    },
-                    {
-                        loader: "less-loader"
-                    },
-                    {
-                        loader: "postcss-loader",
-                        options: {
-                            plugins: [
-                                require("autoprefixer")
-                            ]
-                        }
-                    }
-                ]
-            },
-            {
                 test: /\.(js|jsx)$/,
-                loader: 'babel-loader',
-            },
-            
+                use: 'happypack/loader?id=js',
+                exclude: /node_modules/,
+            }
         ]
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new HtmlWebpackPlugin({
-            title: 'app',
-            filename: 'index.html',
-            template: path.join(__dirname, '../src/index.html')
-        }),
-        new webpack.DllReferencePlugin({
-            manifest: require('./manifest.json'),
-            context: path.resolve(__dirname,'../'),
-        }),
-        new webpack.ProvidePlugin({
-            $: 'jquery'
+        // new CleanWebpackPlugin({
+        //     cleanOnceBeforeBuildPatterns:[
+        //         'dist/*.*',
+        //     ]
+        // }),
+        // new webpack.DllReferencePlugin({
+        //     manifest: require('./manifest.json'),
+        //     context: path.resolve(__dirname, '../'),
+        // }),
+       
+        new HappyPack({
+            id: 'js',
+            //HappyPack 实例都使用同一个共享进程池中的子进程去处理任务，以防止资源占用过多
+            threadPool: HappyPack.ThreadPool({ size: os.cpus().length }),
+            verbose: true,
+            loaders: ['babel-loader']
         }),
 
-    ],
-    devServer: {
-        port: 8088,
-        hot: true,
-        open: true,
-        publicPath: '/dist/',
-        openPage: 'dist/index.html', // 指定打开那个页面
-    }
+    ]
 }
 
 module.exports = config;
