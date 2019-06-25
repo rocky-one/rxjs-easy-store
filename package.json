@@ -1,0 +1,23 @@
+{
+  "name": "rx-store",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "rxjs": "^6.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rocky-one/rx-store.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rocky-one/rx-store/issues"
+  },
+  "homepage": "https://github.com/rocky-one/rx-store#readme"
+}
