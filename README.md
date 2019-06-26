@@ -1,33 +1,44 @@
 # rxjs-easy-store
 	
+- RXJS based on a simple and lightweight state management tool
+- Each module or function point can create its own store
+- The same store can be used by multiple modules to ensure data sharing and data interaction between modules
+- Global dispatch action to any store
 #### Installation ####
-  npm install --save rxjs-easy-store
+
+```
+$ npm install --save rxjs-easy-store
+```
 
 
+### rxjs-easy-store currently provides four methods ###
 
-### rxjs-easy-store提供4个方法 ###
-#### import { createStore, getStore, dispatch, removeStore }  from 'rxjs-easy-store' ####
+1. createStore
+1. removeStore
+1. getStore
+1. dispatch
 
-#### (1) createStore(object) 用来创建一个store ####
+## Example
+#### (1) createStore(object) ####
 
 	createStore({
-	 	// store 名称 需唯一 
+	 	// The store name needs to be unique
 	    name: 'demo',
-	    // 组件 state 
+	    // Component state
 	    state: {
 	        list: [{ name: 'XXX', id: 1 }]
 	    },
-	    // 处理state 生成新的state
+	    // Process state to generate a new state
 	    reducers: {
 	        getList: (action, state) => {
 	            state.list = action.payload.data
 	            return state
 	        }
 	    },
-	    // 副作用处理 这里调用dispatch 
+	    // Side effect handling can do ajax requests and business logic processing
 	    effect: {
 			ajax('url')).subscribe(res => {
-					// 发送action reducers处理生成新的state
+					// dispatch action
 	                dispatch({
 	                    name: 'workbook',
 	                    type: 'getList',
@@ -41,61 +52,74 @@
 
 
 
-##### (2) dispatch(action) 派送一个action,注意分两种情况,参数的key值不同 #####
+##### (2) dispatch(action) #####
+Send an action, divided into two cases, parameters of the key value of the corresponding processing is different
 	
-	1. payload.data 表示是一个同步过程，绕过effect直接会调用store中的reducers对应方法
- 	dispatch({
-        name: 'demo', // 和stote中的name对应
-        type: 'getList', // 和store中的
+###### payload.data 
+The presentation is a synchronous process, and the corresponding method of reducers in the store is directly invoked by bypassing effect
+
+
+	dispatch({
+		// Same name as defined in the store
+        name: 'demo', 
+ 		// The reducers method name remains the same in the store
+        type: 'getList',
         payload: {
             data: res.value
         }
     })
-	2. payload.params 表示是一个异步过程，或者需要执行effect中方法
+###### payload.params 
+The presentation is an asynchronous process, or the method in effects needs to be executed
+	
 	dispatch({
-        name: 'demo', // 和stote中的name对应
-        type: 'addList', // 和store中的
+        name: 'demo',
+		// The effects method name remains the same in the store
+        type: 'add',
         payload: {
             params: '1'
         }
     })
 
-##### (3) getStore(name) 获取store 可以是任意模块的store(跨模块数据共享) #####
+##### (3) getStore(name)#####
+Get store can be store of any module (data sharing across modules)
 
 	const demoStore = getStore('demo')
 
-##### (4) removeStore(name) 移除store 移除任意模块的store #####
-	
+##### (4) removeStore(name)#####
+Remove the store of any module
+
 	removeStore('demo')
 	
 
 
-## 在react中使用 rxjs-easy-store ##
+## Use rxjs-easy-store on react ##
 
 
 	// demoRxStore.js
 	import { createStore, dispatch}  from 'rxjs-easy-store'
+	import { from } from 'rxjs'
+	import { ajax } from 'rxjs/ajax';
 
 	export default createStore({
-	    name: 'workbook',
+	    name: 'demoStore',
 	    state: {
-	        list: [{ name: '哈哈', id: 1 }]
+	        list: [{ name: 'xx', id: 1 }]
 	    },
 	    reducers: {
 	        getList: (action, state) => {
-	            state.list = action.payload.data
+	            state.list = [...action.payload.data]
 	            return state
 	        },
-	        addList: (action, state) => {
-	            state.list.push(action.payload.data)
+	        add: (action, state) => {
+	            state.list.push({...action.payload.data})
 	            return state
 	        }
 	    }, 
-	    effect: {
+	    effects: {
 	        getList: (params) => {
 	            from(ajax('url')).subscribe(res => {
 	                dispatch({
-	                    name: 'workbook',
+	                    name: 'demoStore',
 	                    type: 'getList',
 	                    payload: {
 	                        data: res.value
@@ -103,26 +127,28 @@
 	                })
 	            })
 	        },
-	        addList: (params) => {
-	            dispatch({
-	                name: 'workbook',
-	                type: 'addList',
-	                payload: {
-	                    data: params
-	                }
-	            })
+	        add: (params) => {
+				from(ajax('url')).subscribe(res => {
+		            dispatch({
+		                name: 'demoStore',
+		                type: 'add',
+		                payload: {
+		                    data: params
+		                }
+		            })
+				})
 	        }
 	    }
 	})
 	
-	// A.jsx 一个react组件
-
+	// A.jsx React component
+	
 	export default function A() {
 	    const [list, setList] = useState([])
 	    useEffect(() => {
-			// 调用demoRxStore中getList方法
+			// Call the getList method in demoRxStore
 	        demoRxStore.effect.getList()
-			// 订阅demoRxStore中state的变化
+			// Subscribe to state changes in demoRxStore
 	        demoRxStore.state$.subscribe(store => {
 	            setList(store.list)
 	        })
@@ -130,17 +156,27 @@
 	
 	    return (
 	        <div>
-	            <div>A模块</div>
 	            {
 	                list.map(item => <div key={item.id}>{item.name}</div>)
 	            }
 	            <button onClick={() => {
-	                // 执行一个effect方法
-	                demoRxStore.effect.addList({
-	                    name: `${Math.random() * 1000}`,
-	                    id: Math.random()
+	                // Execute an effect method
+	                demoRxStore.effect.add({
+	                    name: 'xxxx',
+	                    id: 2
 	                })
-	            }}>点击</button>
+					// Or you can dispatch an action, and dispatch can execute any method in any store
+					//dispatch({
+		            //    name: 'demoStore',
+		            //    type: 'add',
+		            //    payload: {
+		            //        params: {
+					//			 name: 'xxxx',
+	                //    		 id: 2
+					//		}
+		            //     }
+		            // })
+	            }}>click</button>
 	        </div>
 	    )
 	}
