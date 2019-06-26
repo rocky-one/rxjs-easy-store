@@ -62,7 +62,7 @@ export const removeStore = modelName => {
   return mIns.remove(modelName);
 };
 
-export function dispatch(action) {
+export const dispatch = (action) => {
   if (action.payload.hasOwnProperty("data")) {
     mIns.modelMap[action.name]["runReducer"](
       action,
@@ -76,6 +76,6 @@ export function dispatch(action) {
   }
 }
 
-export function getStore(storeName) {
+export const getStore = (storeName) => {
   return mIns.getModelState(storeName);
 }

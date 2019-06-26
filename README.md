@@ -19,7 +19,7 @@ $ npm install --save rxjs-easy-store
 1. dispatch
 
 ## Example
-#### (1) createStore(object) ####
+#### createStore(object) ####
 
 	createStore({
 	 	// The store name needs to be unique
@@ -52,7 +52,7 @@ $ npm install --save rxjs-easy-store
 
 
 
-##### (2) dispatch(action) #####
+##### dispatch(action) #####
 Send an action, divided into two cases, parameters of the key value of the corresponding processing is different
 	
 ###### payload.data 
@@ -80,12 +80,12 @@ The presentation is an asynchronous process, or the method in effects needs to b
         }
     })
 
-##### (3) getStore(name)#####
+##### getStore(name) #####
 Get store can be store of any module (data sharing across modules)
 
 	const demoStore = getStore('demo')
 
-##### (4) removeStore(name)#####
+##### removeStore(name) #####
 Remove the store of any module
 
 	removeStore('demo')
