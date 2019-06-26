@@ -52,10 +52,10 @@ $ npm install --save rxjs-easy-store
 
 
 
-##### dispatch(action) #####
+#### dispatch(action) ####
 Send an action, divided into two cases, parameters of the key value of the corresponding processing is different
 	
-###### payload.data 
+##### payload.data 
 The presentation is a synchronous process, and the corresponding method of reducers in the store is directly invoked by bypassing effect
 
 
@@ -68,7 +68,7 @@ The presentation is a synchronous process, and the corresponding method of reduc
             data: res.value
         }
     })
-###### payload.params 
+##### payload.params 
 The presentation is an asynchronous process, or the method in effects needs to be executed
 	
 	dispatch({
@@ -80,12 +80,12 @@ The presentation is an asynchronous process, or the method in effects needs to b
         }
     })
 
-##### getStore(name) #####
+#### getStore(name) ####
 Get store can be store of any module (data sharing across modules)
 
 	const demoStore = getStore('demo')
 
-##### removeStore(name) #####
+#### removeStore(name) ####
 Remove the store of any module
 
 	removeStore('demo')
