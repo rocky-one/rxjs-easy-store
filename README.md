@@ -105,12 +105,12 @@ Higher-order components used on react
                  ...
              }
         },
-		{
-           storeName: ['demoStore'], // Which stores are dependent on
-           propsShallowEqual?: boolean, // Shallow contrast when props change
-           propsDeepEqual?: boolean, // Contrast deeply when props change
-           forwardedRef?: boolean, // True is required when using ref
-		}
+        {
+            storeName: ['demoStore'], // Which stores are dependent on
+            propsShallowEqual?: boolean, // Shallow contrast when props change
+            propsDeepEqual?: boolean, // Contrast deeply when props change
+            forwardedRef?: boolean, // True is required when using ref
+        }
 	)
 
 ## Use rxjs-easy-store on react ##
@@ -187,13 +187,13 @@ Higher-order components used on react
     }
 	
 	export default inject(
-		(store, props) => ({
-           list: store.demoStore.list
-		}),
-		{
-           storeName: ['demoStore'],
-           propsShallowEqual: true,
-		}
-	)(A)
+        (store, props) => ({
+            list: store.demoStore.list
+        }),
+        {
+            storeName: ['demoStore'],
+            propsShallowEqual: true,
+        }
+    )(A)
 	
 
