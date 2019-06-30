@@ -100,16 +100,16 @@ Higher-order components used on react
 		// The store parameter is the collection of all stores
 		// You can store the data you need to pass into the component
 		(store, props) => {
-              return {
-                  list: store.demoStore.list,
-                  ...
-              }
+             return {
+                 list: store.demoStore.list,
+                 ...
+             }
         },
 		{
-            storeName: ['demoStore'], // Which stores are dependent on
-            propsShallowEqual?: boolean, // Shallow contrast when props change
-            propsDeepEqual?: boolean, // Contrast deeply when props change
-            forwardedRef?: boolean, // True is required when using ref
+           storeName: ['demoStore'], // Which stores are dependent on
+           propsShallowEqual?: boolean, // Shallow contrast when props change
+           propsDeepEqual?: boolean, // Contrast deeply when props change
+           forwardedRef?: boolean, // True is required when using ref
 		}
 	)
 
@@ -149,16 +149,16 @@ Higher-order components used on react
 	            })
 	        },
 	        add: (params) => {
-				from(ajax('url')).subscribe(res => {
-					dispatch({
-						name: 'demoStore',
-						type: 'add',
-						payload: {
-							data: res
-						}
-					})
-				})
-			}
+              from(ajax('url')).subscribe(res => {
+                 dispatch({
+                     name: 'demoStore',
+                     type: 'add',
+                     payload: {
+                        data: res
+                     }
+                 })
+              })
+            }
 	    }
 	})
 	
@@ -188,11 +188,11 @@ Higher-order components used on react
 	
 	export default inject(
 		(store, props) => ({
-			list: store.demoStore.list
+           list: store.demoStore.list
 		}),
 		{
-			storeName: ['demoStore'],
-			propsShallowEqual: true,
+           storeName: ['demoStore'],
+           propsShallowEqual: true,
 		}
 	)(A)
 	
