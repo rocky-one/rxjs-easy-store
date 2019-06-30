@@ -4,6 +4,8 @@
 - Each module or function point can create its own store
 - The same store can be used by multiple modules to ensure data sharing and data interaction between modules
 - Global dispatch action to any store
+- A higher-order component is provided for react to allow better connections to the store
+- 
 #### Installation ####
 
 ```
@@ -11,18 +13,19 @@ $ npm install --save rxjs-easy-store
 ```
 
 
-### rxjs-easy-store currently provides four methods ###
+### rxjs-easy-store currently provides five methods ###
 
 1. createStore
 1. removeStore
 1. getStore
 1. dispatch
+1. inject (A higher-order component provided for react)
 
 ## Example
 #### createStore(object) ####
 
 	createStore({
-	 	// The store name needs to be unique
+        // The store name needs to be unique
 	    name: 'demo',
 	    // Component state
 	    state: {
@@ -38,7 +41,7 @@ $ npm install --save rxjs-easy-store
 	    // Side effect handling can do ajax requests and business logic processing
 	    effect: {
 			ajax('url')).subscribe(res => {
-					// dispatch action
+                   // dispatch action
 	                dispatch({
 	                    name: 'workbook',
 	                    type: 'getList',
@@ -60,9 +63,9 @@ The presentation is a synchronous process, and the corresponding method of reduc
 
 
 	dispatch({
-		// Same name as defined in the store
+        // Same name as defined in the store
         name: 'demo', 
- 		// The reducers method name remains the same in the store
+        // The reducers method name remains the same in the store
         type: 'getList',
         payload: {
             data: res.value
@@ -73,7 +76,7 @@ The presentation is an asynchronous process, or the method in effects needs to b
 	
 	dispatch({
         name: 'demo',
-		// The effects method name remains the same in the store
+        // The effects method name remains the same in the store
         type: 'add',
         payload: {
             params: '1'
@@ -86,11 +89,29 @@ Get store can be store of any module (data sharing across modules)
 	const demoStore = getStore('demo')
 
 #### removeStore(name) ####
-Remove the store of any module
+Remove the store of any module, Returns a Boolean value
 
-	removeStore('demo')
-	
+	const removeRes = removeStore('demo')
 
+#### inject(mapStateToProps, options) ####
+Higher-order components used on react
+
+	inject(
+		// The store parameter is the collection of all stores
+		// You can store the data you need to pass into the component
+		(store, props) => {
+			return {
+				list: store.demoStore.list,
+				...
+			}
+		},
+		{
+			storeName: ['demoStore'], // Which stores are dependent on
+	        propsShallowEqual?: boolean, // Shallow contrast when props change
+	        propsDeepEqual?: boolean, // Contrast deeply when props change
+			forwardedRef?: boolean, // True is required when using ref
+		}
+	)
 
 ## Use rxjs-easy-store on react ##
 
@@ -129,56 +150,50 @@ Remove the store of any module
 	        },
 	        add: (params) => {
 				from(ajax('url')).subscribe(res => {
-		            dispatch({
-		                name: 'demoStore',
-		                type: 'add',
-		                payload: {
-		                    data: params
-		                }
-		            })
+					dispatch({
+						name: 'demoStore',
+						type: 'add',
+						payload: {
+							data: res
+						}
+					})
 				})
-	        }
+			}
 	    }
 	})
 	
 	// A.jsx React component
 	
-	export default function A() {
-	    const [list, setList] = useState([])
-	    useEffect(() => {
-			// Call the getList method in demoRxStore
-	        demoRxStore.effect.getList()
-			// Subscribe to state changes in demoRxStore
-	        demoRxStore.state$.subscribe(store => {
-	            setList(store.list)
-	        })
-	    }, [])
-	
+	import { inject, dispatch }  from 'rxjs-easy-store'
+	function A() {
 	    return (
 	        <div>
 	            {
-	                list.map(item => <div key={item.id}>{item.name}</div>)
+	                this.props.list.map(item => <div key={item.id}>{item.name}</div>)
 	            }
 	            <button onClick={() => {
-	                // Execute an effect method
-	                demoRxStore.effect.add({
-	                    name: 'xxxx',
-	                    id: 2
-	                })
-					// Or you can dispatch an action, and dispatch can execute any method in any store
-					//dispatch({
-		            //    name: 'demoStore',
-		            //    type: 'add',
-		            //    payload: {
-		            //        params: {
-					//			 name: 'xxxx',
-	                //    		 id: 2
-					//		}
-		            //     }
-		            // })
+					dispatch({
+		                name: 'demoStore',
+		                type: 'add',
+		                payload: {
+		                    params: {
+	                    		 id: 'xxxx'
+							}
+		                 }
+		             })
 	            }}>click</button>
 	        </div>
 	    )
 	}
+	
+	export default inject(
+		(store, props) => ({
+			list: store.demoStore.list
+		}),
+		{
+			storeName: ['demoStore'],
+			propsShallowEqual: true,
+		}
+	)(A)
 	
 
