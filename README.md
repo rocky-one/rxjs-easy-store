@@ -40,18 +40,18 @@ $ npm install --save rxjs-easy-store
 	    },
 	    // Side effect handling can do ajax requests and business logic processing
 	    effect: {
-			ajax('url')).subscribe(res => {
-                   // dispatch action
-	                dispatch({
-	                    name: 'workbook',
-	                    type: 'getList',
-	                    payload: {
-	                        data: res.value
-	                    }
-	                })
-	            })
-		}
-	})
+           ajax('url')).subscribe(res => {
+              // dispatch action
+              dispatch({
+                   name: 'workbook',
+                   type: 'getList',
+                   payload: {
+                       data: res.value
+                   }
+              })
+           })
+        }
+    })
 
 
 
@@ -100,16 +100,16 @@ Higher-order components used on react
 		// The store parameter is the collection of all stores
 		// You can store the data you need to pass into the component
 		(store, props) => {
-			return {
-				list: store.demoStore.list,
-				...
-			}
-		},
+              return {
+                  list: store.demoStore.list,
+                  ...
+              }
+        },
 		{
-			storeName: ['demoStore'], // Which stores are dependent on
-	        propsShallowEqual?: boolean, // Shallow contrast when props change
-	        propsDeepEqual?: boolean, // Contrast deeply when props change
-			forwardedRef?: boolean, // True is required when using ref
+            storeName: ['demoStore'], // Which stores are dependent on
+            propsShallowEqual?: boolean, // Shallow contrast when props change
+            propsDeepEqual?: boolean, // Contrast deeply when props change
+            forwardedRef?: boolean, // True is required when using ref
 		}
 	)
 
@@ -166,25 +166,25 @@ Higher-order components used on react
 	
 	import { inject, dispatch }  from 'rxjs-easy-store'
 	function A() {
-	    return (
-	        <div>
-	            {
-	                this.props.list.map(item => <div key={item.id}>{item.name}</div>)
-	            }
-	            <button onClick={() => {
-					dispatch({
-		                name: 'demoStore',
-		                type: 'add',
-		                payload: {
-		                    params: {
-	                    		 id: 'xxxx'
-							}
-		                 }
-		             })
-	            }}>click</button>
-	        </div>
-	    )
-	}
+        return (
+           <div>
+            {
+                this.props.list.map(item => <div key={item.id}>{item.name}</div>)
+            }
+            <button onClick={() => {
+                dispatch({
+                    name: 'demoStore',
+                    type: 'add',
+                    payload: {
+                        params: {
+                            id: 'xxxx'
+                        }
+                    }
+                })
+            }}>click</button>
+        </div>
+      )
+    }
 	
 	export default inject(
 		(store, props) => ({
