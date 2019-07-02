@@ -16,7 +16,7 @@ const config = {
         libraryTarget: 'umd'
     },
     resolve: {
-        extensions: ['.js'],
+        extensions: ['.js','.jsx'],
     },
     // optimization: {
     //     splitChunks: {

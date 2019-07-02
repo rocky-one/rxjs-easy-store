@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs"
+import { BehaviorSubject, from } from "rxjs"
 import storeHOC from './storeHOC'
 
 class StoreFactory {
@@ -10,11 +10,22 @@ class StoreFactory {
         this.effects = option.effects;
     }
     runReducer = action => {
-        this.state = this.reducers[action.type](action, this.state);
-        this.state$.next(this.state);
+        const reducer = this.reducers[action.type]
+        if (reducer && typeof reducer === 'function') {
+            this.state = reducer(action, this.state);
+            this.state$.next(this.state);
+        } else {
+            throw new Error('effects[action.type] not a function')
+        }
+
     };
     runEffect = action => {
-        this.effects[action.type](action);//.payload.params
+        const effect = this.effects[action.type]
+        if (effect && typeof effect === 'function') {
+            return effect(action)
+        } else {
+            throw new Error('effects[action.type] not a function')
+        }
     };
 }
 
@@ -64,6 +75,7 @@ export const mIns = new modelMap();
 
 export const createStore = model => {
     const state$ = new BehaviorSubject(model.state);
+
     const store = new StoreFactory(state$, model);
     mIns.add(model.name, store, state$);
     return {
@@ -78,21 +90,17 @@ export const removeStore = modelName => {
 
 export const dispatch = (action) => {
     if (action.payload.hasOwnProperty("data")) {
-        mIns.modelMap[action.name]["runReducer"](
-            action,
-            mIns.getModelState(action.name)
-        );
+        mIns.modelMap[action.name]["runReducer"](action)
     } else {
-        mIns.modelMap[action.name]["runEffect"](
-            action,
-            mIns.getModelState(action.name)
-        );
+        const res = mIns.modelMap[action.name]["runEffect"](action)
+        if (res) {
+            return from(res)
+        }
     }
 }
 
 export const getStore = (storeName) => {
     return mIns.getModelState(storeName);
 }
-
 
 export const inject = (mapStateToProps, option) => Com => storeHOC(Com, mapStateToProps, option)

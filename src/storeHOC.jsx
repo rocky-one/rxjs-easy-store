@@ -8,28 +8,28 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
     storeName = [],
     propsShallowEqual = false,
     propsDeepEqual = false,
-} = {}) { 
+} = {}) {
 
     class StoreHOC extends React.Component {
         constructor(props) {
             super(props)
+            this.subscribes = []
             this.state = {
                 storeProps: mapStateToProps(mIns.getStoreRoot(), this.props),
             }
         }
         componentDidMount() {
             storeName.forEach(name => {
-                mIns.getModelState$(name).subscribe(store => {
+                this.subscribes.push(mIns.getModelState$(name).subscribe(store => {
                     this.setState({
                         storeProps: mapStateToProps(mIns.getStoreRoot(), this.props)
                     })
-                })
+                }))
             })
+
         }
         componentWillUnmount() {
-            storeName.forEach(name => {
-                mIns.getModelState$(name).unsubscribe()
-            })
+            this.subscribes.forEach(sub => sub.unsubscribe())
         }
         shouldComponentUpdate(nextProps, nextState) {
             if (propsDeepEqual) {
@@ -37,11 +37,12 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
                     return false
                 }
             }
-            if (propsShallowEqual) {
+            if (propsShallowEqual && (!propsDeepEqual && !propsShallowEqual)) {
                 if (shallowEqual(this.props, nextProps) && shallowEqual(this.state.storeProps, nextState.storeProps)) {
                     return false
                 }
             }
+
             return true
         }
         render() {

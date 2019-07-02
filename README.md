@@ -5,7 +5,6 @@
 - The same store can be used by multiple modules to ensure data sharing and data interaction between modules
 - Global dispatch action to any store
 - A higher-order component is provided for react to allow better connections to the store
-- 
 #### Installation ####
 
 ```
