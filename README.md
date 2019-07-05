@@ -39,16 +39,18 @@ $ npm install --save rxjs-easy-store
 	    },
 	    // Side effect handling can do ajax requests and business logic processing
 	    effect: {
-           ajax('url')).subscribe(res => {
-              // dispatch action
-              dispatch({
+           getList(action, state){
+             ajax('url')).subscribe(res => {
+                // dispatch action
+                dispatch({
                    name: 'workbook',
                    type: 'getList',
                    payload: {
                        data: res.value
                    }
-              })
-           })
+               })
+             })
+           }
         }
     })
 
@@ -66,6 +68,8 @@ The presentation is a synchronous process, and the corresponding method of reduc
         name: 'demo', 
         // The reducers method name remains the same in the store
         type: 'getList',
+        // The observer does not respond, and the component does not render.
+        suspens: true,
         payload: {
             data: res.value
         }

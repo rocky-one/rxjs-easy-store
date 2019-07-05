@@ -13,16 +13,17 @@ class StoreFactory {
         const reducer = this.reducers[action.type]
         if (reducer && typeof reducer === 'function') {
             this.state = reducer(action, this.state);
-            this.state$.next(this.state);
+            if(!action.suspens){
+                this.state$.next(this.state);
+            }
         } else {
             throw new Error('effects[action.type] not a function')
         }
-
     };
     runEffect = action => {
         const effect = this.effects[action.type]
         if (effect && typeof effect === 'function') {
-            return effect(action)
+            return effect(action, this.state)
         } else {
             throw new Error('effects[action.type] not a function')
         }
