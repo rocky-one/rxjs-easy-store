@@ -36,10 +36,9 @@ describe("storeHOC", function () {
 				}
 			}
 		});
-		let r = 0
+
 		class A extends React.Component {
 			render() {
-				r++
 				return (
 					<div>
 						{this.props.list.map(item => <div className={item.name} key={item.id}>{item.name}</div>)}
@@ -57,8 +56,8 @@ describe("storeHOC", function () {
 			storeName: ['testStore4'],
 		})(A)
 		const wrapper = mount(<EnhanceA />)
-		expect(wrapper.find('.tom').text()).to.equal('tom')
 
+		expect(wrapper.find('.tom').text()).to.equal('tom')
 		dispatch({
 			name: "testStore4",
 			type: "getList",

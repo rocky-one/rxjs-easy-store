@@ -1,4 +1,4 @@
-import { fromJS, is } from "immutable"
+// import { fromJS, is } from "immutable"
 
 const hasOwn = Object.prototype.hasOwnProperty
 
@@ -37,6 +37,6 @@ export function shallowEqual(objA, objB) {
 }
 
 
-export function deepEqual(objA, objB) {
-    return is(fromJS(objA), fromJS(objB))
-}
+// export function deepEqual(objA, objB) {
+//     return is(fromJS(objA), fromJS(objB))
+// }

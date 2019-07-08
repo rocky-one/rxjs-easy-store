@@ -1,4 +1,4 @@
-import { createStore } from "../dist";
+import { createStore } from "../src";
 import { expect } from "chai";
 
 describe("createStore", function() {

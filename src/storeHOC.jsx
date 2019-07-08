@@ -1,12 +1,11 @@
 import React from 'react'
 import hoistNonReactStatic from 'hoist-non-react-statics';
 import { mIns } from './index'
-import { deepEqual, shallowEqual } from './utils'
+import { shallowEqual } from './utils'
 
 export default function storeHOC(WrappedComponent, mapStateToProps, {
     forwardedRef = false,
     storeName = [],
-    propsShallowEqual = false,
     propsDeepEqual = false,
 } = {}) {
 
@@ -14,43 +13,50 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
         constructor(props) {
             super(props)
             this.subscribes = []
-            this.state = {
-                storeProps: mapStateToProps(mIns.getStoreRoot(), this.props),
-            }
+            this.propsChange = false
+            this.storeProps = mapStateToProps(mIns.getStoreRoot(), this.props)
         }
         componentDidMount() {
             storeName.forEach(name => {
-                this.subscribes.push(mIns.getModelState$(name).subscribe(store => {
-                    this.setState({
-                        storeProps: mapStateToProps(mIns.getStoreRoot(), this.props)
-                    })
+                this.subscribes.push(mIns.getModelState$(name).subscribe(() => {
+                    this.nextStoreProps = mapStateToProps(mIns.getStoreRoot(), this.props)
+                    this.setState({})
                 }))
             })
-
         }
         componentWillUnmount() {
             this.subscribes.forEach(sub => sub.unsubscribe())
         }
-        shouldComponentUpdate(nextProps, nextState) {
-            if (propsDeepEqual) {
-                if (deepEqual(this.props, nextProps) && deepEqual(this.state.storeProps, nextState.storeProps)) {
+        componentWillReceiveProps() {
+            this.propsChange = true
+        }
+        shouldComponentUpdate() {
+            // const nextStoreProps = mapStateToProps(mIns.getStoreRoot(), nextProps)
+            if (this.propsChange) {
+                this.propsChange = false
+                this.storeProps = this.nextStoreProps
+                return true
+            }
+            
+            // if (propsDeepEqual) {
+            //     if (deepEqual(this.storeProps, this.nextStoreProps)) {
+            //         return false
+            //     } 
+            // }
+            if (!propsDeepEqual) {
+                if (shallowEqual(this.storeProps, this.nextStoreProps)) {
                     return false
                 }
             }
-            if (propsShallowEqual && (!propsDeepEqual && !propsShallowEqual)) {
-                if (shallowEqual(this.props, nextProps) && shallowEqual(this.state.storeProps, nextState.storeProps)) {
-                    return false
-                }
-            }
-
+            this.storeProps = this.nextStoreProps
             return true
         }
         render() {
             const { forwardedRef, ...rest } = this.props;
             if (forwardedRef) {
-                return <WrappedComponent ref={forwardedRef} {...this.state.storeProps} {...rest} />
+                return <WrappedComponent ref={forwardedRef} {...this.storeProps} {...rest} />
             }
-            return <WrappedComponent {...this.state.storeProps} {...rest} />
+            return <WrappedComponent {...this.storeProps} {...rest} />
         }
     }
     let forwarded = null

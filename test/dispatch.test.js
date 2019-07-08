@@ -1,4 +1,4 @@
-import { createStore, dispatch } from "../dist";
+import { createStore, dispatch } from "../src";
 import { expect } from "chai";
 
 describe("dispatch", function() {
@@ -37,15 +37,9 @@ describe("dispatch", function() {
       }
     });
 
-    let num = 0;
     testStore.state$.subscribe(state => {
       expect(state.list).to.be.an("array");
-      if (num === 0) {
-        expect([]).to.eql(state.list);
-        num++;
-      } else {
         expect([1, 2, 3]).to.eql(state.list);
-      }
     });
   });
 });
