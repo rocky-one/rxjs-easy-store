@@ -18,9 +18,11 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
         }
         componentDidMount() {
             storeName.forEach(name => {
-                this.subscribes.push(mIns.getModelState$(name).subscribe(() => {
+                this.subscribes.push(mIns.getModelState$(name).subscribe((obj) => {
                     this.nextStoreProps = mapStateToProps(mIns.getStoreRoot(), this.props)
-                    this.setState({})
+                    this.setState({}, () => {
+                        obj.callbacks.forEach(c => c())
+                    })
                 }))
             })
         }
@@ -37,7 +39,6 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
                 this.storeProps = this.nextStoreProps
                 return true
             }
-            
             // if (propsDeepEqual) {
             //     if (deepEqual(this.storeProps, this.nextStoreProps)) {
             //         return false

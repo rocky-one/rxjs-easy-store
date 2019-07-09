@@ -1,5 +1,6 @@
 import { Subject } from "rxjs"
 import storeHOC from './storeHOC'
+import { defer } from './utils'
 
 class StoreFactory {
     // state$,
@@ -7,22 +8,47 @@ class StoreFactory {
         this.name = option.name;
         this.state = option.state || {};
         // this.state$ = state$;
+        this.queue = []
         this.reducers = option.reducers;
         this.effects = option.effects;
         this.subject = new Subject();
     }
-    
-    getObservable =() =>{
+
+    getObservable = () => {
         return this.subject
-    } 
-    runReducer = action => {
+    }
+    flush = () => {
+        let qLen = this.queue.length,
+            suspensLen = 0,
+            callbacks = [],
+            q
+
+        while (q = this.queue.shift()) {
+            q.reducer(q.action, this.state)
+            q.callback && callbacks.push(q.callback)
+            if (q.suspens) {
+                suspensLen++
+            }
+        }
+        if (suspensLen != qLen) {
+            this.subject.next({
+                // state: this.state,
+                callbacks
+            })
+        }
+    }
+    runReducer = (action, callback) => {
         const reducer = this.reducers[action.type]
         if (reducer && typeof reducer === 'function') {
-            this.state = reducer(action, this.state);
-            if (!action.suspens) {
-                // this.state$.next(this.state);
-                this.subject.next(this.state)
+            // this.state = reducer(action, this.state);
+            if (this.queue.length === 0) {
+                defer(this.flush)
             }
+            this.queue.push({
+                reducer,
+                action,
+                callback
+            })
         } else {
             throw new Error('effects[action.type] not a function')
         }
@@ -96,9 +122,9 @@ export const removeStore = modelName => {
     return mIns.remove(modelName);
 };
 
-export const dispatch = (action) => {
+export const dispatch = (action, callback) => {
     if (action.payload.hasOwnProperty("data")) {
-        mIns.modelMap[action.name]["runReducer"](action)
+        mIns.modelMap[action.name]["runReducer"](action, callback)
     } else {
         const res = mIns.modelMap[action.name]["runEffect"](action)
         if (res) {

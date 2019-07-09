@@ -36,6 +36,9 @@ export function shallowEqual(objA, objB) {
     return true
 }
 
+export function defer(callback) {
+    return Promise.resolve().then(callback)
+}
 
 // export function deepEqual(objA, objB) {
 //     return is(fromJS(objA), fromJS(objB))

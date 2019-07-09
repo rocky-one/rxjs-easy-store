@@ -66,8 +66,10 @@ describe("storeHOC", function () {
 			},
 
 		});
-		const wrapper2 = mount(<EnhanceA />)
-		expect(wrapper2.find('.tom2').text()).to.equal('tom2')
+		setTimeout(()=>{
+			const wrapper2 = mount(<EnhanceA />)
+			expect(wrapper2.find('.tom2').text()).to.equal('tom2')
+		})
 
 	});
 });
