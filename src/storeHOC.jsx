@@ -1,6 +1,6 @@
 import React from 'react'
 import hoistNonReactStatic from 'hoist-non-react-statics';
-import { mIns } from './index'
+import { mIns, dispatch } from './index'
 import { shallowEqual } from './utils'
 
 export default function storeHOC(WrappedComponent, mapStateToProps, {
@@ -20,7 +20,7 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
             storeName.forEach(name => {
                 this.subscribes.push(mIns.getModelState$(name).subscribe((obj) => {
                     this.nextStoreProps = mapStateToProps(mIns.getStoreRoot(), this.props)
-                    this.setState({}, (a) => {
+                    this.setState({}, () => {
                         obj.callbacks.forEach(c => c())
                     })
                 }))
@@ -55,9 +55,9 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
         render() {
             const { forwardedRef, ...rest } = this.props;
             if (forwardedRef) {
-                return <WrappedComponent ref={forwardedRef} {...this.storeProps} {...rest} />
+                return <WrappedComponent ref={forwardedRef} {...this.storeProps} {...rest} dispatch={dispatch} />
             }
-            return <WrappedComponent {...this.storeProps} {...rest} />
+            return <WrappedComponent {...this.storeProps} {...rest} dispatch={dispatch} />
         }
     }
     let forwarded = null
