@@ -3,17 +3,17 @@ import storeHOC from './storeHOC'
 import { defer } from './utils'
 
 class StoreFactory {
-    // state$,
     constructor(option) {
         this.name = option.name;
         this.state = option.state || {};
-        // this.state$ = state$;
         this.queue = []
         this.reducers = option.reducers;
         this.effects = option.effects;
         this.subject = new Subject();
     }
-
+    getState = () =>{
+        return this.state
+    }
     getObservable = () => {
         return this.subject
     }
@@ -32,7 +32,6 @@ class StoreFactory {
         }
         if (suspensLen != qLen) {
             this.subject.next({
-                // state: this.state,
                 callbacks
             })
         }
@@ -40,7 +39,6 @@ class StoreFactory {
     runReducer = (action, callback) => {
         const reducer = this.reducers[action.type]
         if (reducer && typeof reducer === 'function') {
-            // this.state = reducer(action, this.state);
             if (this.queue.length === 0) {
                 defer(this.flush)
             }
@@ -109,11 +107,11 @@ export const mIns = new modelMap();
 
 export const createStore = model => {
     // const state$ = new BehaviorSubject(model.state);
-    // state$, 
     const store = new StoreFactory(model);
     mIns.add(model.name, store, store.getObservable());
     return {
-        state$: store.getObservable(),
+        state: store.getState(),
+        observable: store.getObservable(),
         effects: store.effects
     };
 };

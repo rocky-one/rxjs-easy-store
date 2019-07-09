@@ -20,7 +20,7 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
             storeName.forEach(name => {
                 this.subscribes.push(mIns.getModelState$(name).subscribe((obj) => {
                     this.nextStoreProps = mapStateToProps(mIns.getStoreRoot(), this.props)
-                    this.setState({}, () => {
+                    this.setState({}, (a) => {
                         obj.callbacks.forEach(c => c())
                     })
                 }))

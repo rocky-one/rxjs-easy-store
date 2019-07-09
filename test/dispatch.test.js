@@ -37,9 +37,9 @@ describe("dispatch", function() {
       }
     });
 
-    testStore.state$.subscribe(state => {
-      expect(state.list).to.be.an("array");
-        expect([1, 2, 3]).to.eql(state.list);
+    testStore.observable.subscribe(() => {
+      expect(testStore.state.list).to.be.an("array");
+        expect([1, 2, 3]).to.eql(testStore.state.list);
     });
   });
 });

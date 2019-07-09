@@ -26,7 +26,8 @@ describe("createStore", function() {
         }
       }
     });
-    expect(store).to.have.ownProperty("state$");
+    expect(store).to.have.ownProperty("observable");
     expect(store).to.have.ownProperty("effects");
+    expect(store).to.have.ownProperty("state");
   });
 });
