@@ -11,7 +11,7 @@ class StoreFactory {
         this.effects = option.effects;
         this.subject = new Subject();
     }
-    getState = () =>{
+    getState = () => {
         return this.state
     }
     getObservable = () => {
@@ -39,14 +39,18 @@ class StoreFactory {
     runReducer = (action, callback) => {
         const reducer = this.reducers[action.type]
         if (reducer && typeof reducer === 'function') {
-            if (this.queue.length === 0) {
-                defer(this.flush)
+            reducer(action, this.state)
+            if (!action.suspens) {
+                this.subject.next()
             }
-            this.queue.push({
-                reducer,
-                action,
-                callback
-            })
+            // if (this.queue.length === 0) {
+            //     defer(this.flush)
+            // }
+            // this.queue.push({
+            //     reducer,
+            //     action,
+            //     callback
+            // })
         } else {
             throw new Error('effects[action.type] not a function')
         }

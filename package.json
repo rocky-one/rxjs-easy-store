@@ -1,6 +1,6 @@
 {
   "name": "rxjs-easy-store",
-  "version": "1.1.1",
+  "version": "1.1.3",
   "description": "A store library based on rxjs can handle data sharing of multiple modules and interactive response of different modules, which is simple and easy to use.",
   "main": "dist/index.js",
   "dependencies": {
