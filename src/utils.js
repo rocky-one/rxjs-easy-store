@@ -43,3 +43,22 @@ export function defer(callback) {
 // export function deepEqual(objA, objB) {
 //     return is(fromJS(objA), fromJS(objB))
 // }
+
+function isObject(o) {
+    return (typeof o === 'object' || typeof o === 'function') && o !== null
+}
+export function deepClone(obj, hash = new WeakMap()) {
+    if (!isObject(obj)) {
+        return obj
+    }
+    if (hash.has(obj)) return hash.get(obj)
+    let isArray = Array.isArray(obj)
+    let cloneObj = isArray ? [] : {}
+    hash.set(obj, cloneObj)
+    let result = Object.keys(obj).map(key => {
+        return {
+            [key]: deepClone(obj[key], hash)
+        }
+    })
+    return Object.assign(cloneObj, ...result)
+}
