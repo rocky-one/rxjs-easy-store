@@ -1,5 +1,3 @@
-// import { fromJS, is } from "immutable"
-
 const hasOwn = Object.prototype.hasOwnProperty
 
 function isShallow(x, y) {
@@ -40,6 +38,14 @@ export function defer(callback) {
     return Promise.resolve().then(callback)
 }
 
-// export function deepEqual(objA, objB) {
-//     return is(fromJS(objA), fromJS(objB))
-// }
+export function compose(...funcs) {
+    if (funcs.length === 0) {
+        return arg => arg
+    }
+
+    if (funcs.length === 1) {
+        return funcs[0]
+    }
+
+    return funcs.reduce((a, b) => (...args) => a(b(...args)))
+}

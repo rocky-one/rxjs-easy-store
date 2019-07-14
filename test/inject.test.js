@@ -53,7 +53,7 @@ describe("storeHOC", function () {
 			}
 		}
 		const EnhanceA = inject(mapStateToProps, {
-			storeName: ['testStore4'],
+			store: 'testStore4',
 		})(A)
 		const wrapper = mount(<EnhanceA />)
 

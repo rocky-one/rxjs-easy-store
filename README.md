@@ -12,13 +12,14 @@ $ npm install --save rxjs-easy-store
 ```
 
 
-### rxjs-easy-store currently provides five methods ###
+### rxjs-easy-store currently provides six methods ###
 
 1. createStore
 1. removeStore
 1. getStore
 1. dispatch
 1. inject (A higher-order component provided for react)
+1. registerMiddleware 
 
 ## Example
 #### createStore(object) ####
@@ -37,8 +38,9 @@ $ npm install --save rxjs-easy-store
 	            return state
 	        }
 	    },
-	    // Side effect handling can do ajax requests and business logic processing
-	    effect: {
+	    // Side effects handling can do ajax requests and business logic processing
+        // Methods in effects are passed into injected components by default
+	    effects: {
            getList(action, state){
              ajax('url')).subscribe(res => {
                 // dispatch action
@@ -57,11 +59,6 @@ $ npm install --save rxjs-easy-store
 
 
 #### dispatch(action) ####
-Send an action, divided into two cases, parameters of the key value of the corresponding processing is different
-	
-##### payload.data 
-The presentation is a synchronous process, and the corresponding method of reducers in the store is directly invoked by bypassing effect
-
 
 	dispatch({
         // Same name as defined in the store
@@ -72,17 +69,6 @@ The presentation is a synchronous process, and the corresponding method of reduc
         suspens: true,
         payload: {
             data: res.value
-        }
-    })
-##### payload.params 
-The presentation is an asynchronous process, or the method in effects needs to be executed
-	
-	dispatch({
-        name: 'demo',
-        // The effects method name remains the same in the store
-        type: 'add',
-        payload: {
-            params: '1'
         }
     })
 
@@ -109,10 +95,27 @@ Higher-order components used on react
              }
         },
         {
-            storeName: ['demoStore'], // Which stores are dependent on
+            store: 'demoStore', // Current sotre name
+
+            /**
+              Can respond to multiple stores
+              When the values of store1 and store2 change and 
+              the current component depends on the values in the store, 
+              the current component will render again 
+            */ 
+
+            dependentStores: ['store1','store2'],
             forwardedRef?: boolean, // True is required when using ref
         }
 	)
+
+#### registerMiddleware([middleware1, middleware2]) ####
+    const middleware1 = store => next => (action, state) => {
+         // Do something
+         // ...
+         next(action, state)
+    }
+    registerMiddleware([middleware1, ...])
 
 ## Use rxjs-easy-store on react ##
 
@@ -150,7 +153,11 @@ Higher-order components used on react
 	            })
 	        },
 	        add: (params) => {
-              from(ajax('url')).subscribe(res => {
+              from(ajax({
+                   url: 'https://httpbin.org/post',
+                   method: 'POST',
+                   body: params,
+              })).subscribe(res => {
                  dispatch({
                      name: 'demoStore',
                      type: 'add',
@@ -166,22 +173,14 @@ Higher-order components used on react
 	// A.jsx React component
 	
 	import { inject, dispatch }  from 'rxjs-easy-store'
-	function A() {
+	function A(props) {
         return (
            <div>
             {
-                this.props.list.map(item => <div key={item.id}>{item.name}</div>)
+                props.list.map(item => <div key={item.id}>{item.name}</div>)
             }
-            <button onClick={() => {
-                dispatch({
-                    name: 'demoStore',
-                    type: 'add',
-                    payload: {
-                        params: {
-                            id: 'xxxx'
-                        }
-                    }
-                })
+            // effects method can be obtained directly through props
+            <button onClick={() => props.add({name:'xxx'}))
             }}>click</button>
         </div>
       )
@@ -190,9 +189,9 @@ Higher-order components used on react
 	export default inject(
         (store, props) => ({
             list: store.demoStore.list
-        }),
+        }),]
         {
-            storeName: ['demoStore']
+            store: 'demoStore'
         }
     )(A)
 	

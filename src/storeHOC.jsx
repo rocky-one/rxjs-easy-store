@@ -5,8 +5,9 @@ import { shallowEqual } from './utils'
 
 export default function storeHOC(WrappedComponent, mapStateToProps, {
     forwardedRef = false,
-    storeName = [],
     propsDeepEqual = false,
+    dependentStores = [],
+    store = '',
 } = {}) {
 
     class StoreHOC extends React.Component {
@@ -17,7 +18,10 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
             this.storeProps = mapStateToProps(mIns.getStoreRoot(), this.props)
         }
         componentDidMount() {
-            storeName.forEach(name => {
+            if (store != '') {
+                dependentStores.push(store)
+            }
+            dependentStores.forEach(name => {
                 this.subscribes.push(mIns.getModelState$(name).subscribe(() => {
                     this.nextStoreProps = mapStateToProps(mIns.getStoreRoot(), this.props)
                     this.setState({})
@@ -52,10 +56,20 @@ export default function storeHOC(WrappedComponent, mapStateToProps, {
         }
         render() {
             const { forwardedRef, ...rest } = this.props;
+            const mapEffects = mIns.getEffects(store) || {}
             if (forwardedRef) {
-                return <WrappedComponent ref={forwardedRef} {...this.storeProps} {...rest} dispatch={dispatch} />
+                return <WrappedComponent
+                    ref={forwardedRef}
+                    {...this.storeProps}
+                    {...rest}
+                    {...mapEffects}
+                    dispatch={dispatch} />
             }
-            return <WrappedComponent {...this.storeProps} {...rest} dispatch={dispatch} />
+            return <WrappedComponent
+                {...this.storeProps}
+                {...rest}
+                {...mapEffects}
+                dispatch={dispatch} />
         }
     }
     let forwarded = null

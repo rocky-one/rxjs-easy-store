@@ -1,69 +1,7 @@
 import { Subject } from "rxjs"
 import storeHOC from './storeHOC'
-import { defer } from './utils'
-
-class StoreFactory {
-    constructor(option) {
-        this.name = option.name;
-        this.state = option.state || {};
-        this.queue = []
-        this.reducers = option.reducers;
-        this.effects = option.effects;
-        this.subject = new Subject();
-    }
-    getState = () => {
-        return this.state
-    }
-    getObservable = () => {
-        return this.subject
-    }
-    flush = () => {
-        let qLen = this.queue.length,
-            suspensLen = 0,
-            callbacks = [],
-            q
-
-        while (q = this.queue.shift()) {
-            q.reducer(q.action, this.state)
-            q.callback && callbacks.push(q.callback)
-            if (q.suspens) {
-                suspensLen++
-            }
-        }
-        if (suspensLen != qLen) {
-            this.subject.next({
-                callbacks
-            })
-        }
-    }
-    runReducer = (action, callback) => {
-        const reducer = this.reducers[action.type]
-        if (reducer && typeof reducer === 'function') {
-            reducer(action, this.state)
-            if (!action.suspens) {
-                this.subject.next()
-            }
-            // if (this.queue.length === 0) {
-            //     defer(this.flush)
-            // }
-            // this.queue.push({
-            //     reducer,
-            //     action,
-            //     callback
-            // })
-        } else {
-            throw new Error('effects[action.type] not a function')
-        }
-    };
-    runEffect = action => {
-        const effect = this.effects[action.type]
-        if (effect && typeof effect === 'function') {
-            return effect(action, this.state)
-        } else {
-            throw new Error('effects[action.type] not a function')
-        }
-    };
-}
+import { series } from './utils'
+import { applyMiddleware, middlewareIns, registerMiddleware } from './middleware'
 
 class modelMap {
     constructor() {
@@ -102,12 +40,90 @@ class modelMap {
         }
         return null;
     }
+    getEffects = modelName => {
+        if (this.modelMap[modelName]) {
+            return this.modelMap[modelName].getEffects();
+        }
+        return null;
+    }
     getStoreRoot = () => {
         return this.storeRoot
     }
 }
 
 export const mIns = new modelMap();
+
+class StoreFactory {
+    constructor(option) {
+        this.name = option.name;
+        this.state = option.state || {};
+        this.queue = []
+        this.reducers = option.reducers;
+        this.effects = option.effects;
+        this.subject = new Subject();
+    }
+    getState = () => {
+        return this.state
+    }
+    getEffects = () => {
+        return this.effects
+    }
+    getObservable = () => {
+        return this.subject
+    }
+    flush = () => {
+        let qLen = this.queue.length,
+            suspensLen = 0,
+            callbacks = [],
+            q
+
+        while (q = this.queue.shift()) {
+            q.reducer(q.action, this.state)
+            q.callback && callbacks.push(q.callback)
+            if (q.suspens) {
+                suspensLen++
+            }
+        }
+        if (suspensLen != qLen) {
+            this.subject.next({
+                callbacks
+            })
+        }
+    }
+    runReducer = (action, callback) => {
+        const reducer = this.reducers[action.type]
+        if (reducer && typeof reducer === 'function') {
+            applyMiddleware({
+                middlewares: middlewareIns.getMiddleware(),
+                getState: () => mIns.getStoreRoot(),
+                action,
+                reducer,
+                curState: this.state,
+                subject: this.subject
+            })
+            // if (this.queue.length === 0) {
+            //     defer(this.flush)
+            // }
+            // this.queue.push({
+            //     reducer,
+            //     action,
+            //     callback
+            // })
+        } else {
+            throw new Error('effects[action.type] not a function')
+        }
+    };
+    runEffect = action => {
+        const effect = this.effects[action.type]
+        if (effect && typeof effect === 'function') {
+            return effect(action, this.state)
+        } else {
+            throw new Error('effects[action.type] not a function')
+        }
+    };
+}
+
+
 
 export const createStore = model => {
     // const state$ = new BehaviorSubject(model.state);
@@ -140,3 +156,8 @@ export const getStore = (storeName) => {
 }
 
 export const inject = (mapStateToProps, option) => Com => storeHOC(Com, mapStateToProps, option)
+
+
+export {
+    registerMiddleware
+} 
