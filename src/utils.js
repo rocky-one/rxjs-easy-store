@@ -38,7 +38,6 @@ export function defer(callback) {
     return Promise.resolve().then(callback)
 }
 
-<<<<<<< HEAD
 export function compose(...funcs) {
     if (funcs.length === 0) {
         return arg => arg
@@ -50,7 +49,6 @@ export function compose(...funcs) {
 
     return funcs.reduce((a, b) => (...args) => a(b(...args)))
 }
-=======
 // export function deepEqual(objA, objB) {
 //     return is(fromJS(objA), fromJS(objB))
 // }
@@ -73,4 +71,3 @@ export function deepClone(obj, hash = new WeakMap()) {
     })
     return Object.assign(cloneObj, ...result)
 }
->>>>>>> eaa7a345e6a9b6a6976a5bb9a05b7f7261093249
