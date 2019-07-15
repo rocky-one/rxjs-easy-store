@@ -96,16 +96,20 @@ class StoreFactory {
         const reducer = this.reducers[action.type]
         if (reducer && typeof reducer === 'function') {
             const suspens = action.suspens
+            const newReducer = (action, state) => {
+                this.state = reducer(action, state)
+                mIns.updateState(this.state, action.name)
+            }
             const enhanceReducer = applyMiddleware({
                 middlewares: middlewareIns.getMiddleware(),
                 getState: () => mIns.getStoreRoot(),
                 // action,
-                reducer,
+                reducer: newReducer,
                 // curState: this.state,
                 // subject: this.subject
             })
-            this.state = enhanceReducer(action, this.state)
-            mIns.updateState(this.state, action.name)
+            enhanceReducer(action, this.state)
+            // mIns.updateState(state, action.name)
             if (!suspens) {
                 this.subject.next()
             }

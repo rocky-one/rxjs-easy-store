@@ -28,6 +28,6 @@ export const applyMiddleware = ({
         getState,
     }
     const chain = middlewares.map(middleware => middleware(midParams))
-    return compose(...chain)((act, curState) => reducer(act, curState))
+    return compose(...chain)(reducer)
 
 }
