@@ -22,19 +22,12 @@ export const registerMiddleware = (middleware = []) => {
 export const applyMiddleware = ({
     middlewares,
     getState,
-    action,
     reducer,
-    curState,
-    subject
 } = {}) => {
     const midParams = {
         getState,
     }
-    const suspens = action.suspens
     const chain = middlewares.map(middleware => middleware(midParams))
-    const enhanceReducer = compose(...chain)((act, curState) => reducer(act, curState))
-    enhanceReducer(action, curState)
-    if (!suspens) {
-        subject.next()
-    }
+    return compose(...chain)((act, curState) => reducer(act, curState))
+
 }

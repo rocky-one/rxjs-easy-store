@@ -1,6 +1,5 @@
 import { Subject } from "rxjs"
 import storeHOC from './storeHOC'
-import { series } from './utils'
 import { applyMiddleware, middlewareIns, registerMiddleware } from './middleware'
 
 class modelMap {
@@ -16,6 +15,9 @@ class modelMap {
         this.storeRoot[modelName] = store.state
         this.storeRoot$[modelName] = store$
         this.modelMap[modelName] = store;
+    }
+    updateState = (state, modelName) => {
+        this.storeRoot[modelName] = state
     }
     remove = modelName => {
         if (this.modelMap[modelName]) {
@@ -93,14 +95,20 @@ class StoreFactory {
     runReducer = (action, callback) => {
         const reducer = this.reducers[action.type]
         if (reducer && typeof reducer === 'function') {
-            applyMiddleware({
+            const suspens = action.suspens
+            const enhanceReducer = applyMiddleware({
                 middlewares: middlewareIns.getMiddleware(),
                 getState: () => mIns.getStoreRoot(),
-                action,
+                // action,
                 reducer,
-                curState: this.state,
-                subject: this.subject
+                // curState: this.state,
+                // subject: this.subject
             })
+            this.state = enhanceReducer(action, this.state)
+            mIns.updateState(this.state, action.name)
+            if (!suspens) {
+                this.subject.next()
+            }
             // if (this.queue.length === 0) {
             //     defer(this.flush)
             // }
