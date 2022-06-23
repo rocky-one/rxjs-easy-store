@@ -25,7 +25,7 @@
     "enzyme-adapter-react-16": "^1.14.0",
     "happypack": "^5.0.1",
     "jest-dom": "^3.5.0",
-    "jsdom": "15.1.1",
+    "jsdom": "16.5.0",
     "jsdom-global": "3.0.2",
     "mocha": "^6.1.4",
     "mocha-jsdom": "^2.0.0",
